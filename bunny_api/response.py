@@ -1,7 +1,7 @@
 from typing import Any
 
 from .config import BunnyResponseConfig
-from .schemas.base import ResponseSchema
+from .schemas import ResponseSchema
 
 
 def success(data: Any = None, message: str = '') -> ResponseSchema:
@@ -15,11 +15,15 @@ def success(data: Any = None, message: str = '') -> ResponseSchema:
     )
 
 
-def error(message: str = '', code: int = BunnyResponseConfig.ERROR, data: Any = None) -> ResponseSchema:
+def error(
+    message: str = '', code: int = BunnyResponseConfig.ERROR, data: Any = None
+) -> ResponseSchema:
     """
     返回错误响应
     """
-    return ResponseSchema(code=code, message=message or BunnyResponseConfig.get_message(code), data=data)
+    return ResponseSchema(
+        code=code, message=message or BunnyResponseConfig.get_message(code), data=data
+    )
 
 
 def error_params(message: str = '', data: Any = None) -> ResponseSchema:

@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from tortoise import Tortoise
 from tortoise.exceptions import BaseORMException
 
-from .api.admin import adminRouter
+from .api import adminRouter, adminRouterWithAuth
 from .config import TORTOISE_ORM
 from .exceptions import (
     BunnyException,
@@ -25,6 +25,7 @@ def create_app():
     app = FastAPI(title='Bunny API', lifespan=lifespan)
 
     app.include_router(adminRouter)
+    app.include_router(adminRouterWithAuth)
 
     app.add_exception_handler(BunnyException, bunny_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)

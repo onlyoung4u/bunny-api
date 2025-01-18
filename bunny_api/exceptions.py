@@ -46,7 +46,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     请求参数验证异常处理
     """
 
-    data = [f'{".".join(str(loc) for loc in error["loc"])}: {error["msg"]}' for error in exc.errors()]
+    data = [
+        f'{".".join(str(loc) for loc in error["loc"])}: {error["msg"]}' for error in exc.errors()
+    ]
 
     return JSONResponse(status_code=200, content=error_params(message='', data=data).model_dump())
 

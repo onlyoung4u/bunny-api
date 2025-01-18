@@ -121,8 +121,15 @@ class BunnyToken:
 
 
 def get_bunny_token(
-    secret_key: str = bunny_config.token_secret_key,
+    secret_key: str,
     expires_delta: timedelta | None = None,
     sso: bool = False,
 ) -> BunnyToken:
     return BunnyToken(secret_key, expires_delta, sso)
+
+
+admin_bunny_token = get_bunny_token(
+    secret_key=bunny_config.admin_token_secret_key,
+    expires_delta=timedelta(seconds=bunny_config.admin_token_expires_seconds),
+    sso=bunny_config.admin_token_sso,
+)

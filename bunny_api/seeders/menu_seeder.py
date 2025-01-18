@@ -1,4 +1,4 @@
-from bunny_api.models.bunny import BunnyMenu
+from bunny_api.models import BunnyMenu
 from bunny_api.seeder import BaseSeeder
 
 
@@ -22,7 +22,10 @@ class MenuSeeder(BaseSeeder):
     }
 
     def get_action(
-        self, parent_id: int, permission_prefix: str, actions: list[str] = [ACTION_CREATE, ACTION_UPDATE, ACTION_DELETE]
+        self,
+        parent_id: int,
+        permission_prefix: str,
+        actions: list[str] = [ACTION_CREATE, ACTION_UPDATE, ACTION_DELETE],
     ) -> list[BunnyMenu]:
         actions_menu = []
 
@@ -36,6 +39,7 @@ class MenuSeeder(BaseSeeder):
                     title=self.ACTIONS_LABELS[action],
                     path='',
                     permission=f'{permission_prefix}.{action}',
+                    hidden=True,
                 )
             )
 
@@ -71,7 +75,9 @@ class MenuSeeder(BaseSeeder):
         await BunnyMenu.bulk_create(self.get_action(menu_menu.id, 'menu'))
 
         # 系统设置-系统配置
-        await BunnyMenu.create(parent_id=system_menu.id, title='系统配置', path='/settings', permission='settings')
+        await BunnyMenu.create(
+            parent_id=system_menu.id, title='系统配置', path='/settings', permission='settings'
+        )
 
         # 系统设置-配置管理
         config_menu = await BunnyMenu.create(
@@ -80,4 +86,6 @@ class MenuSeeder(BaseSeeder):
         await BunnyMenu.bulk_create(self.get_action(config_menu.id, 'config'))
 
         # 系统设置-操作日志
-        await BunnyMenu.create(parent_id=system_menu.id, title='操作日志', path='/logs', permission='logs')
+        await BunnyMenu.create(
+            parent_id=system_menu.id, title='操作日志', path='/logs', permission='logs'
+        )

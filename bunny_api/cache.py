@@ -8,13 +8,13 @@ from .config import bunny_config
 
 
 class BunnyCache:
-    def __init__(self, redis_client: Redis, ttl: int = 600, maxsize: int = 128):
+    def __init__(self, redis_client: Redis, ttl: int = 86400, maxsize: int = 128):
         """
         使用 cachetools 和 redis 实现缓存
 
         Args:
             redis_client: redis 客户端实例
-            ttl: 缓存过期时间（秒），默认为 600 秒
+            ttl: 缓存过期时间（秒），默认为 86400 秒
             maxsize: 最大缓存条目数，默认为 128
         """
         self.redis_client = redis_client

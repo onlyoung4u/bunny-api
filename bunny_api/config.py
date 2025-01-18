@@ -62,7 +62,9 @@ class BunnyConfig(BaseSettings):
     redis_db: int = 0
     redis_password: str | None = None
 
-    token_secret_key: str
+    admin_token_secret_key: str
+    admin_token_expires_seconds: int = 86400
+    admin_token_sso: bool = False
 
     extra_models: str = ''
 
