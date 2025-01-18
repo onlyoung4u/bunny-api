@@ -1,0 +1,20 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# 数据库
+migrations/
+.env

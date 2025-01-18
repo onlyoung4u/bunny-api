@@ -1,0 +1,10 @@
+[tool.aerich]
+tortoise_orm = "bunny_api.config.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"

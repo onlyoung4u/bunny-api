@@ -1,0 +1,8 @@
+fastapi[all]
+uvicorn[standard]
+tortoise-orm[asyncmy]
+aerich[toml]
+pyjwt
+bcrypt
+cachetools
+redis
