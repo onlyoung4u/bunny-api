@@ -1,5 +1,6 @@
-from fastapi import Request, logger
+from fastapi import Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.logger import logger
 from fastapi.responses import JSONResponse
 from tortoise.exceptions import BaseORMException
 
@@ -38,7 +39,11 @@ async def bunny_exception_handler(request: Request, exc: BunnyException):
     Bunny 异常处理
     """
 
-    return JSONResponse(status_code=200, content=error(message=exc.msg, code=exc.code).model_dump())
+    return JSONResponse(
+        status_code=200,
+        content=error(message=exc.msg, code=exc.code).model_dump(),
+        headers={'Bunny-Error': 'true'},
+    )
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -50,7 +55,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         f'{".".join(str(loc) for loc in error["loc"])}: {error["msg"]}' for error in exc.errors()
     ]
 
-    return JSONResponse(status_code=200, content=error_params(message='', data=data).model_dump())
+    return JSONResponse(
+        status_code=200,
+        content=error_params(message='', data=data).model_dump(),
+        headers={'Bunny-Error': 'true'},
+    )
 
 
 async def tortoise_exception_handler(request: Request, exc: BaseORMException):
@@ -60,4 +69,8 @@ async def tortoise_exception_handler(request: Request, exc: BaseORMException):
 
     logger.error(f'Tortoise ORM 异常: {exc}')
 
-    return JSONResponse(status_code=200, content=error().model_dump())
+    return JSONResponse(
+        status_code=200,
+        content=error().model_dump(),
+        headers={'Bunny-Error': 'true'},
+    )

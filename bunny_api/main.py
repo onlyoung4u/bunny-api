@@ -13,6 +13,7 @@ from .exceptions import (
     tortoise_exception_handler,
     validation_exception_handler,
 )
+from .middlewares import OperationLogMiddleware
 
 
 def create_app():
@@ -23,6 +24,8 @@ def create_app():
         await Tortoise.close_connections()
 
     app = FastAPI(title='Bunny API', lifespan=lifespan)
+
+    app.add_middleware(OperationLogMiddleware)
 
     app.include_router(adminRouter)
     app.include_router(adminRouterWithAuth)

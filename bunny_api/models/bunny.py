@@ -32,8 +32,12 @@ class BunnyRole(BaseModel):
 
 
 class BunnyUserRole(BaseModelWithoutTimestamp):
-    user = fields.ForeignKeyField('models.BunnyUser', related_name='user_roles', db_constraint=False)
-    role = fields.ForeignKeyField('models.BunnyRole', related_name='user_roles', db_constraint=False)
+    user = fields.ForeignKeyField(
+        'models.BunnyUser', related_name='user_roles', db_constraint=False
+    )
+    role = fields.ForeignKeyField(
+        'models.BunnyRole', related_name='user_roles', db_constraint=False
+    )
 
     class Meta:
         table = 'bunny_user_roles'
@@ -105,9 +109,11 @@ class BunnyOperationLog(BaseModel):
     user_id = fields.IntField()
     username = fields.CharField(max_length=64)
     path = fields.CharField(max_length=255)
+    route = fields.CharField(max_length=64)
     method = fields.CharField(max_length=10)
     ip = fields.CharField(max_length=15)
     content = fields.JSONField()
+    is_success = fields.BooleanField()
 
     class Meta:
         table = 'bunny_operation_logs'
