@@ -1,24 +1,97 @@
+from typing import List
+
+from tortoise.contrib.pydantic import pydantic_model_creator
+from tortoise.transactions import in_transaction
+
 from ..exceptions import BunnyException
-from ..models import BunnyMenu
+from ..models import BunnyMenu, BunnyRolePermission
 from ..permission import Permission
-from ..schemas import MenuCreate
+from ..schemas import MenuParams
 
 
 class MenuService:
     @staticmethod
-    async def create_menu(menu: MenuCreate) -> None:
+    async def list() -> List[dict]:
+        menus = await BunnyMenu.all().order_by('sort', 'id')
+        return MenuService.handle_menu_tree(menus, False)
+
+    @staticmethod
+    async def create(menu: MenuParams) -> None:
+        if menu.parent_id > 0:
+            if not await BunnyMenu.filter(id=menu.parent_id, path__isnull=False).exists():
+                raise BunnyException('父级菜单不存在')
+
         if menu.path and await BunnyMenu.filter(parent_id=menu.parent_id, path=menu.path).exists():
-            raise BunnyException('菜单路径已存在')
+            raise BunnyException('路径已存在')
 
         if await BunnyMenu.filter(permission=menu.permission).exists():
-            raise BunnyException('菜单权限已存在')
+            raise BunnyException('权限已存在')
 
         await BunnyMenu.create(**menu.model_dump())
 
     @staticmethod
+    async def update(id: int, menu: MenuParams) -> None:
+        if not await BunnyMenu.filter(id=id).exists():
+            raise BunnyException('菜单不存在')
+
+        if menu.parent_id > 0:
+            if menu.parent_id == id:
+                raise BunnyException('父级菜单不能是自身')
+
+            if not await BunnyMenu.filter(id=menu.parent_id, path__isnull=False).exists():
+                raise BunnyException('父级菜单不存在')
+
+        if (
+            menu.path
+            and await BunnyMenu.filter(
+                parent_id=menu.parent_id, path=menu.path, id__not=id
+            ).exists()
+        ):
+            raise BunnyException('路径已存在')
+
+        if await BunnyMenu.filter(permission=menu.permission, id__not=id).exists():
+            raise BunnyException('权限已存在')
+
+        await BunnyMenu.filter(id=id).update(**menu.model_dump())
+
+    @staticmethod
+    async def delete(id: int) -> None:
+        if not await BunnyMenu.filter(id=id).exists():
+            raise BunnyException('菜单不存在')
+
+        ids = [id, *(await MenuService.get_all_children(id))]
+
+        async with in_transaction():
+            permissions = (
+                await BunnyMenu.filter(id__in=ids).all().values_list('permission', flat=True)
+            )
+
+            await BunnyMenu.filter(id__in=ids).delete()
+
+            await BunnyRolePermission.filter(permission__in=permissions).delete()
+
+    @staticmethod
+    async def get_all_children(id: int, visited: set | None = None) -> List[int]:
+        if visited is None:
+            visited = set()
+
+        if id in visited:
+            return []
+
+        visited.add(id)
+
+        list = await BunnyMenu.filter(parent_id=id).all()
+        ids = [item.id for item in list]
+
+        for item in list:
+            ids.extend(await MenuService.get_all_children(item.id, visited))
+
+        return ids
+
+    @staticmethod
     def handle_menu_data(menu: BunnyMenu, handle: bool, path: str) -> dict:
         if not handle:
-            return menu.model_dump()
+            return pydantic_model_creator(BunnyMenu).model_validate(menu).model_dump()
 
         full_path = path + menu.path
 
@@ -41,9 +114,9 @@ class MenuService:
 
     @staticmethod
     def handle_menu_tree(
-        menus: list[BunnyMenu], handle: bool = True, parent_id: int = 0, path: str = ''
-    ) -> list[dict]:
-        tree = []
+        menus: List[BunnyMenu], handle: bool = True, parent_id: int = 0, path: str = ''
+    ) -> List[dict]:
+        tree: List[dict] = []
 
         for menu in menus:
             if menu.parent_id == parent_id and (not handle or (handle and menu.hidden is False)):
@@ -58,8 +131,8 @@ class MenuService:
         return tree
 
     @staticmethod
-    async def get_user_menu(user_id: int, handle: bool = True) -> list[dict]:
-        menus = []
+    async def get_user_menu(user_id: int, handle: bool = True) -> List[dict]:
+        menus: List[BunnyMenu] = []
 
         if user_id == 1:
             menus = await BunnyMenu.all().order_by('sort', 'id')

@@ -1,6 +1,7 @@
 import json
 
 from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from ..exceptions import AuthenticationError, PermissionError
 from ..models.bunny import BunnyOperationLog, BunnyUser
@@ -63,13 +64,16 @@ async def operation_log(request: Request, call_next):
             user_id = request.state.user_id
 
         username = ''
+        nickname = ''
         if user_id > 0:
             user = await BunnyUser.get(id=user_id)
             username = user.username
+            nickname = user.nickname
 
         await BunnyOperationLog.create(
             user_id=user_id,
             username=username,
+            nickname=nickname,
             path=path,
             route=route,
             method=method,
@@ -79,3 +83,8 @@ async def operation_log(request: Request, call_next):
         )
 
     return response
+
+
+class OperationLogMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        return await operation_log(request, call_next)

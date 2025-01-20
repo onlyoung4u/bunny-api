@@ -21,14 +21,25 @@ class BunnyUser(BaseModel):
     class Meta:
         table = 'bunny_users'
 
+    class PydanticMeta:
+        exclude = ['password']
+
 
 class BunnyRole(BaseModel):
     name = fields.CharField(max_length=64, unique=True)
-    permissions = fields.JSONField()
     creator_id = fields.IntField()
 
     class Meta:
         table = 'bunny_roles'
+
+
+class BunnyRolePermission(BaseModel):
+    role_id = fields.IntField()
+    permission = fields.CharField(max_length=64)
+
+    class Meta:
+        table = 'bunny_role_permissions'
+        unique_together = ('role_id', 'permission')
 
 
 class BunnyUserRole(BaseModelWithoutTimestamp):
@@ -108,6 +119,7 @@ class BunnyConfig(BaseModel):
 class BunnyOperationLog(BaseModel):
     user_id = fields.IntField()
     username = fields.CharField(max_length=64)
+    nickname = fields.CharField(max_length=64)
     path = fields.CharField(max_length=255)
     route = fields.CharField(max_length=64)
     method = fields.CharField(max_length=10)

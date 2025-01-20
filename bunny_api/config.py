@@ -68,6 +68,11 @@ class BunnyConfig(BaseSettings):
 
     extra_models: str = ''
 
+    cors_allow_origins: str = '*'
+    cors_allow_credentials: bool = True
+    cors_allow_methods: str = 'GET,POST,PUT,DELETE,OPTIONS'
+    cors_allow_headers: str = '*'
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

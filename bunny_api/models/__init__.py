@@ -6,6 +6,7 @@ from .bunny import (
     BunnyMenu,
     BunnyOperationLog,
     BunnyRole,
+    BunnyRolePermission,
     BunnyUser,
     BunnyUserRole,
 )
@@ -19,6 +20,7 @@ __all__ = [
     'BunnyMenu',
     'BunnyOperationLog',
     'BunnyRole',
+    'BunnyRolePermission',
     'BunnyUser',
     'BunnyUserRole',
 ]
