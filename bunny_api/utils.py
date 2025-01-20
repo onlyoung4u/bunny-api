@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import List
 
 import bcrypt
 from fastapi import Request
@@ -25,3 +26,8 @@ def get_real_ip(request: Request) -> str:
         return x_forwarded_for.split(',')[0].strip()
 
     return request.client.host
+
+
+@lru_cache(maxsize=1000)
+def str2list(s: str, sep: str = ',') -> List[str]:
+    return [item.strip() for item in s.split(sep) if item.strip()]

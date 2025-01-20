@@ -5,7 +5,7 @@ from uuid import uuid4
 from jwt import decode, encode
 
 from .cache import bunny_cache
-from .config import bunny_config
+from .config import BUNNY_CONFIG
 from .exceptions import AuthenticationError
 
 
@@ -129,7 +129,7 @@ def get_bunny_token(
 
 
 admin_bunny_token = get_bunny_token(
-    secret_key=bunny_config.admin_token_secret_key,
-    expires_delta=timedelta(seconds=bunny_config.admin_token_expires_seconds),
-    sso=bunny_config.admin_token_sso,
+    secret_key=BUNNY_CONFIG.admin_token_secret_key,
+    expires_delta=timedelta(seconds=BUNNY_CONFIG.admin_token_expires_seconds),
+    sso=BUNNY_CONFIG.admin_token_sso,
 )

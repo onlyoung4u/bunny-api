@@ -31,7 +31,7 @@ class MenuService:
 
     @staticmethod
     async def update(id: int, menu: MenuParams) -> None:
-        if not await BunnyMenu.filter(id=id).exists():
+        if not await BunnyMenu.filter(id=id, is_system=False).exists():
             raise BunnyException('菜单不存在')
 
         if menu.parent_id > 0:
@@ -56,7 +56,7 @@ class MenuService:
 
     @staticmethod
     async def delete(id: int) -> None:
-        if not await BunnyMenu.filter(id=id).exists():
+        if not await BunnyMenu.filter(id=id, is_system=False).exists():
             raise BunnyException('菜单不存在')
 
         ids = [id, *(await MenuService.get_all_children(id))]

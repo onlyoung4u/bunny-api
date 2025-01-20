@@ -40,6 +40,7 @@ class MenuSeeder(BaseSeeder):
                     path='',
                     permission=f'{permission_prefix}.{action}',
                     hidden=True,
+                    is_system=True,
                 )
             )
 
@@ -54,38 +55,63 @@ class MenuSeeder(BaseSeeder):
             permission='system',
             icon='material-symbols:settings',
             sort=99,
+            is_system=True,
         )
 
         # 系统设置-用户管理
         user_menu = await BunnyMenu.create(
-            parent_id=system_menu.id, title='用户管理', path='/users', permission='user.list'
+            parent_id=system_menu.id,
+            title='用户管理',
+            path='/users',
+            permission='user.list',
+            is_system=True,
         )
         await BunnyMenu.bulk_create(self.get_action(user_menu.id, 'user'))
 
         # 系统设置-角色管理
         role_menu = await BunnyMenu.create(
-            parent_id=system_menu.id, title='角色管理', path='/roles', permission='role.list'
+            parent_id=system_menu.id,
+            title='角色管理',
+            path='/roles',
+            permission='role.list',
+            is_system=True,
         )
         await BunnyMenu.bulk_create(self.get_action(role_menu.id, 'role'))
 
         # 系统设置-菜单管理
         menu_menu = await BunnyMenu.create(
-            parent_id=system_menu.id, title='菜单管理', path='/menus', permission='menu.list'
+            parent_id=system_menu.id,
+            title='菜单管理',
+            path='/menus',
+            permission='menu.list',
+            is_system=True,
         )
         await BunnyMenu.bulk_create(self.get_action(menu_menu.id, 'menu'))
 
         # 系统设置-系统配置
         await BunnyMenu.create(
-            parent_id=system_menu.id, title='系统配置', path='/settings', permission='settings'
+            parent_id=system_menu.id,
+            title='系统配置',
+            path='/settings',
+            permission='settings',
+            is_system=True,
         )
 
         # 系统设置-配置管理
         config_menu = await BunnyMenu.create(
-            parent_id=system_menu.id, title='配置管理', path='/configs', permission='config.list'
+            parent_id=system_menu.id,
+            title='配置管理',
+            path='/configs',
+            permission='config.list',
+            is_system=True,
         )
         await BunnyMenu.bulk_create(self.get_action(config_menu.id, 'config'))
 
         # 系统设置-操作日志
         await BunnyMenu.create(
-            parent_id=system_menu.id, title='操作日志', path='/logs', permission='logs'
+            parent_id=system_menu.id,
+            title='操作日志',
+            path='/logs',
+            permission='logs',
+            is_system=True,
         )

@@ -63,6 +63,7 @@ class BunnyMenu(BaseModel):
     link = fields.CharField(max_length=255, default='')
     hidden = fields.BooleanField(default=False)
     sort = fields.SmallIntField(default=0)
+    is_system = fields.BooleanField(default=False)
 
     class Meta:
         table = 'bunny_menus'

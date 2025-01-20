@@ -92,12 +92,12 @@ def get_db_url(config: BunnyConfig) -> str:
 def get_tortoise_orm_config() -> dict:
     models = ['aerich.models', 'bunny_api.models.bunny']
 
-    if bunny_config.extra_models:
-        extra_models = bunny_config.extra_models.split(',')
+    if BUNNY_CONFIG.extra_models:
+        extra_models = BUNNY_CONFIG.extra_models.split(',')
         models.extend(extra_models)
 
     return {
-        'connections': {'default': get_db_url(bunny_config)},
+        'connections': {'default': get_db_url(BUNNY_CONFIG)},
         'apps': {
             'models': {
                 'models': models,
@@ -107,6 +107,6 @@ def get_tortoise_orm_config() -> dict:
     }
 
 
-bunny_config: Final = get_config()
+BUNNY_CONFIG: Final = get_config()
 
 TORTOISE_ORM: Final = get_tortoise_orm_config()

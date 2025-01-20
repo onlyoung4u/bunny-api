@@ -4,7 +4,7 @@ import pickle
 from cachetools import TTLCache
 from redis import Redis
 
-from .config import bunny_config
+from .config import BUNNY_CONFIG
 
 
 class BunnyCache:
@@ -115,9 +115,9 @@ class BunnyCache:
 
 bunny_cache = BunnyCache(
     Redis(
-        host=bunny_config.redis_host,
-        port=bunny_config.redis_port,
-        db=bunny_config.redis_db,
-        password=bunny_config.redis_password,
+        host=BUNNY_CONFIG.redis_host,
+        port=BUNNY_CONFIG.redis_port,
+        db=BUNNY_CONFIG.redis_db,
+        password=BUNNY_CONFIG.redis_password,
     )
 )

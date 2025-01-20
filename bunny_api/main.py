@@ -2,11 +2,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from tortoise import Tortoise
 from tortoise.exceptions import BaseORMException
 
 from .api import adminRouter, adminRouterWithAuth
-from .config import TORTOISE_ORM
+from .config import TORTOISE_ORM, BUNNY_CONFIG
 from .exceptions import (
     BunnyException,
     bunny_exception_handler,
@@ -14,6 +15,7 @@ from .exceptions import (
     validation_exception_handler,
 )
 from .middlewares import OperationLogMiddleware
+from .utils import str2list
 
 
 def create_app():
@@ -24,6 +26,14 @@ def create_app():
         await Tortoise.close_connections()
 
     app = FastAPI(title='Bunny API', lifespan=lifespan)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=str2list(BUNNY_CONFIG.cors_allow_origins),
+        allow_credentials=BUNNY_CONFIG.cors_allow_credentials,
+        allow_methods=str2list(BUNNY_CONFIG.cors_allow_methods),
+        allow_headers=str2list(BUNNY_CONFIG.cors_allow_headers),
+    )
 
     app.add_middleware(OperationLogMiddleware)
 
