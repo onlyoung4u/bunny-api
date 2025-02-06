@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request
 
 from ..middlewares import permission_check, set_log_body, verify_token
-from ..models.bunny import BunnyRole
+from ..permission import Permission
 from ..response import success
 from ..schemas import MenuParams, PaginationParams, ResponseSchema, RoleParams, UserLogin
 from ..services import AuthService, MenuService
@@ -22,10 +22,17 @@ async def login(user_login: UserLogin) -> ResponseSchema:
     return success(token)
 
 
+@adminRouterWithAuth.get('/permissions')
+async def get_permissions(request: Request) -> ResponseSchema:
+    permissions = await Permission.get_user_permissions(
+        request.state.user_id, Permission.get_flag()
+    )
+    return success(permissions)
+
+
 @adminRouterWithAuth.get('/menus')
 async def get_menus(request: Request) -> ResponseSchema:
-    user_id = request.state.user_id
-    menus = await MenuService.get_user_menu(user_id)
+    menus = await MenuService.get_user_menu(request.state.user_id)
     return success(menus)
 
 

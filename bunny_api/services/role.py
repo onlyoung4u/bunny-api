@@ -53,6 +53,8 @@ class RoleService:
 
             await BunnyRolePermission.bulk_create(permission_list)
 
+        Permission.refresh()
+
     @staticmethod
     async def update(id: int, role_params: RoleParams, user_id: int) -> None:
         filters = {'creator_id': user_id} if user_id > 1 else {}

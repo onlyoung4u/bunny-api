@@ -1,24 +1,24 @@
 import time
-from functools import lru_cache
 
 from .cache import bunny_cache
-from .models import BunnyUserRole, BunnyRolePermission
+from .models import BunnyRolePermission, BunnyUserRole
+from .models.bunny import BunnyMenu
 
 
 class Permission:
     @staticmethod
     def get_flag() -> int:
-        flag = bunny_cache.get('permission:flag')
+        flag = bunny_cache.get_memory('permission:flag')
 
         if not flag:
             flag = time.time()
-            bunny_cache.set('permission:flag', flag)
+            bunny_cache.set_memory('permission:flag', flag)
 
         return int(flag)
 
     @staticmethod
     def refresh() -> None:
-        bunny_cache.set('permission:flag', time.time())
+        bunny_cache.set_memory('permission:flag', time.time())
 
     @staticmethod
     async def check_permission(user_id: int, permission: str) -> bool:
@@ -29,16 +29,29 @@ class Permission:
 
         return permission in permissions
 
-    @lru_cache
     @staticmethod
     async def get_user_permissions(user_id: int, flag: int) -> list[str]:
-        role_ids = await BunnyUserRole.filter(user_id=user_id).values_list('role_id', flat=True)
+        cache_key = f'permission:user:{user_id}:{flag}'
 
-        if not role_ids:
-            return []
+        permissions = bunny_cache.get_memory(cache_key)
 
-        permissions = await BunnyRolePermission.filter(role_id__in=role_ids).values_list(
-            'permission', flat=True
-        )
+        if permissions is not None:
+            return permissions
 
-        return list(set(permissions))
+        if user_id == 1:
+            permissions = await BunnyMenu.all().values_list('permission', flat=True)
+        else:
+            role_ids = await BunnyUserRole.filter(user_id=user_id).values_list('role_id', flat=True)
+
+            if not role_ids:
+                permissions = []
+            else:
+                permissions = await BunnyRolePermission.filter(role_id__in=role_ids).values_list(
+                    'permission', flat=True
+                )
+
+                permissions = list(set(permissions))
+
+        bunny_cache.set_memory(cache_key, permissions)
+
+        return permissions

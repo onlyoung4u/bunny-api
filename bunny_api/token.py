@@ -58,7 +58,7 @@ class BunnyToken:
             uuid = str(uuid4())
             to_encode.update({'key': uuid})
             cache_key = self.get_cache_key(user_id)
-            bunny_cache.set(cache_key, uuid, self.expires_delta.total_seconds())
+            bunny_cache.set_redis(cache_key, uuid, self.expires_delta.total_seconds())
 
         return encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
@@ -82,7 +82,7 @@ class BunnyToken:
             raise AuthenticationError()
 
         blacklist_cache_key = self.get_cache_key(token, 'token:blacklist')
-        if bunny_cache.get(blacklist_cache_key):
+        if bunny_cache.get_redis(blacklist_cache_key):
             raise AuthenticationError()
 
         user_id: int = payload['user_id']
@@ -91,7 +91,7 @@ class BunnyToken:
             if 'key' not in payload:
                 raise AuthenticationError()
 
-            cache_value = bunny_cache.get(self.get_cache_key(user_id))
+            cache_value = bunny_cache.get_redis(self.get_cache_key(user_id))
 
             if not cache_value or cache_value != payload['key']:
                 raise AuthenticationError()
@@ -114,7 +114,7 @@ class BunnyToken:
             user_id: int = payload['user_id']
             expires_delta: timedelta = payload['exp'] - datetime.now()
             cache_key = self.get_cache_key(token, 'token:blacklist')
-            bunny_cache.set(cache_key, user_id, expires_delta.total_seconds())
+            bunny_cache.set_redis(cache_key, user_id, expires_delta.total_seconds())
             return True
         except Exception:
             return False

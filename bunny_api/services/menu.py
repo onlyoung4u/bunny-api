@@ -1,4 +1,3 @@
-import re
 from typing import List
 
 from tortoise.transactions import in_transaction
@@ -29,6 +28,8 @@ class MenuService:
 
         await BunnyMenu.create(**menu.model_dump())
 
+        Permission.refresh()
+
     @staticmethod
     async def update(id: int, menu: MenuParams) -> None:
         if not await BunnyMenu.filter(id=id, is_system=False).exists():
@@ -54,6 +55,8 @@ class MenuService:
 
         await BunnyMenu.filter(id=id).update(**menu.model_dump())
 
+        Permission.refresh()
+
     @staticmethod
     async def delete(id: int) -> None:
         if not await BunnyMenu.filter(id=id, is_system=False).exists():
@@ -69,6 +72,8 @@ class MenuService:
             await BunnyMenu.filter(id__in=ids).delete()
 
             await BunnyRolePermission.filter(permission__in=permissions).delete()
+
+        Permission.refresh()
 
     @staticmethod
     async def get_all_children(id: int, visited: set | None = None) -> List[int]:
@@ -119,7 +124,7 @@ class MenuService:
         tree: List[dict] = []
 
         for menu in menus:
-            if menu.parent_id == parent_id and (not handle or (handle and menu.hidden is False)):
+            if menu.parent_id == parent_id:
                 tree_item = MenuService.handle_menu_data(menu, handle, path)
 
                 children = MenuService.handle_menu_tree(menus, handle, menu.id, path + menu.path)
