@@ -2,7 +2,7 @@ from enum import Enum
 
 from tortoise import fields
 
-from .base import BaseModel, BaseModelWithoutTimestamp
+from .base import BaseModel
 
 
 class BunnyUser(BaseModel):
@@ -14,8 +14,14 @@ class BunnyUser(BaseModel):
     is_active = fields.BooleanField(default=True)
     is_deleted = fields.BooleanField(default=False, index=True)
 
+    created_roles: fields.ReverseRelation['BunnyRole']
+
     roles: fields.ManyToManyRelation['BunnyRole'] = fields.ManyToManyField(
-        'models.BunnyRole', related_name='users', through='bunny_user_roles'
+        'models.BunnyRole',
+        forward_key='user_id',
+        backward_key='role_id',
+        related_name='users',
+        through='bunny_user_roles',
     )
 
     class Meta:
@@ -27,31 +33,36 @@ class BunnyUser(BaseModel):
 
 class BunnyRole(BaseModel):
     name = fields.CharField(max_length=64, unique=True)
-    creator_id = fields.IntField()
+
+    creator = fields.ForeignKeyField(
+        'models.BunnyUser', related_name='created_roles', db_constraint=False
+    )
+
+    permissions: fields.ReverseRelation['BunnyRolePermission']
 
     class Meta:
         table = 'bunny_roles'
 
 
 class BunnyRolePermission(BaseModel):
-    role_id = fields.IntField()
     permission = fields.CharField(max_length=64)
+
+    role = fields.ForeignKeyField(
+        'models.BunnyRole', related_name='permissions', db_constraint=False
+    )
 
     class Meta:
         table = 'bunny_role_permissions'
         unique_together = ('role_id', 'permission')
 
 
-class BunnyUserRole(BaseModelWithoutTimestamp):
-    user = fields.ForeignKeyField(
-        'models.BunnyUser', related_name='user_roles', db_constraint=False
-    )
-    role = fields.ForeignKeyField(
-        'models.BunnyRole', related_name='user_roles', db_constraint=False
-    )
+class BunnyUserRole(BaseModel):
+    user_id = fields.IntField()
+    role_id = fields.IntField()
 
     class Meta:
         table = 'bunny_user_roles'
+        unique_together = ('user_id', 'role_id')
 
 
 class BunnyMenu(BaseModel):
@@ -61,8 +72,8 @@ class BunnyMenu(BaseModel):
     permission = fields.CharField(max_length=64, unique=True)
     icon = fields.CharField(max_length=64, default='')
     link = fields.CharField(max_length=255, default='')
-    hidden = fields.BooleanField(default=False)
     sort = fields.SmallIntField(default=0)
+    hidden = fields.BooleanField(default=False)
     is_system = fields.BooleanField(default=False)
 
     class Meta:

@@ -1,6 +1,6 @@
+import re
 from typing import List
 
-from tortoise.contrib.pydantic import pydantic_model_creator
 from tortoise.transactions import in_transaction
 
 from ..exceptions import BunnyException
@@ -91,7 +91,7 @@ class MenuService:
     @staticmethod
     def handle_menu_data(menu: BunnyMenu, handle: bool, path: str) -> dict:
         if not handle:
-            return pydantic_model_creator(BunnyMenu).model_validate(menu).model_dump()
+            return menu.model_dump()
 
         full_path = path + menu.path
 
@@ -134,12 +134,18 @@ class MenuService:
     async def get_user_menu(user_id: int, handle: bool = True) -> List[dict]:
         menus: List[BunnyMenu] = []
 
+        filters = {} if handle else {'hidden': False}
+
         if user_id == 1:
-            menus = await BunnyMenu.all().order_by('sort', 'id')
+            menus = await BunnyMenu.filter(**filters).order_by('sort', 'id')
         else:
             permissions = await Permission.get_user_permissions(user_id, Permission.get_flag())
 
             if permissions:
-                menus = await BunnyMenu.filter(permission__in=permissions).order_by('sort', 'id')
+                menus = (
+                    await BunnyMenu.filter(**filters)
+                    .filter(permission__in=permissions)
+                    .order_by('sort', 'id')
+                )
 
         return MenuService.handle_menu_tree(menus, handle)

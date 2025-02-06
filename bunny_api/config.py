@@ -56,6 +56,7 @@ class BunnyConfig(BaseSettings):
     db_user: str
     db_password: str
     db_name: str
+    db_type: str = 'mysql'
 
     redis_host: str = 'localhost'
     redis_port: int = 6379
@@ -85,7 +86,7 @@ def get_config() -> BunnyConfig:
 
 
 def get_db_url(config: BunnyConfig) -> str:
-    return f'mysql://{config.db_user}:{config.db_password}@{config.db_host}:{config.db_port}/{config.db_name}'
+    return f'{config.db_type}://{config.db_user}:{config.db_password}@{config.db_host}:{config.db_port}/{config.db_name}'
 
 
 @lru_cache

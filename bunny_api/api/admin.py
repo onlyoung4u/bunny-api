@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Depends, Request
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, Request
 
 from ..middlewares import permission_check, set_log_body, verify_token
+from ..models.bunny import BunnyRole
 from ..response import success
-from ..schemas import MenuParams, ResponseSchema, UserLogin
+from ..schemas import MenuParams, PaginationParams, ResponseSchema, RoleParams, UserLogin
 from ..services import AuthService, MenuService
+from ..services.role import RoleService
 
 adminRouter = APIRouter(prefix='/admin', dependencies=[Depends(set_log_body)])
 adminRouterWithAuth = APIRouter(
@@ -46,4 +50,34 @@ async def menu_update(id: int, menu: MenuParams) -> ResponseSchema:
 @adminRouterWithAuth.delete('/menu/{id}', name='menu.delete')
 async def menu_delete(id: int) -> ResponseSchema:
     await MenuService.delete(id)
+    return success()
+
+
+@adminRouterWithAuth.get('/role', name='role.list')
+async def role_list(params: Annotated[PaginationParams, Query()]) -> ResponseSchema:
+    roles = await RoleService.list(params)
+    return success(roles)
+
+
+@adminRouterWithAuth.get('/role/{id}', name='role.list')
+async def role_detail(id: int) -> ResponseSchema:
+    role = await RoleService.detail(id)
+    return success(await role.to_pydantic_model())
+
+
+@adminRouterWithAuth.post('/role', name='role.create')
+async def role_create(request: Request, role: RoleParams) -> ResponseSchema:
+    await RoleService.create(role, request.state.user_id)
+    return success()
+
+
+@adminRouterWithAuth.put('/role/{id}', name='role.update')
+async def role_update(request: Request, id: int, role: RoleParams) -> ResponseSchema:
+    await RoleService.update(id, role, request.state.user_id)
+    return success()
+
+
+@adminRouterWithAuth.delete('/role/{id}', name='role.delete')
+async def role_delete(request: Request, id: int) -> ResponseSchema:
+    await RoleService.delete(id, request.state.user_id)
     return success()

@@ -1,6 +1,6 @@
 fastapi[all]
 uvicorn[standard]
-tortoise-orm[asyncmy]
+tortoise-orm[asyncmy,asyncpg]
 aerich[toml]
 pyjwt
 bcrypt

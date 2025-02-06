@@ -2,7 +2,7 @@ import time
 from functools import lru_cache
 
 from .cache import bunny_cache
-from .models import BunnyUser
+from .models import BunnyUserRole, BunnyRolePermission
 
 
 class Permission:
@@ -17,7 +17,7 @@ class Permission:
         return int(flag)
 
     @staticmethod
-    def refresh_flag() -> None:
+    def refresh() -> None:
         bunny_cache.set('permission:flag', time.time())
 
     @staticmethod
@@ -32,17 +32,13 @@ class Permission:
     @lru_cache
     @staticmethod
     async def get_user_permissions(user_id: int, flag: int) -> list[str]:
-        user = (
-            await BunnyUser.filter(id=user_id, is_active=True, is_deleted=False)
-            .prefetch_related('roles')
-            .first()
-        )
+        role_ids = await BunnyUserRole.filter(user_id=user_id).values_list('role_id', flat=True)
 
-        if not user:
+        if not role_ids:
             return []
 
-        permissions = list(
-            set([permission for role in user.roles for permission in role.permissions])
+        permissions = await BunnyRolePermission.filter(role_id__in=role_ids).values_list(
+            'permission', flat=True
         )
 
-        return permissions
+        return list(set(permissions))

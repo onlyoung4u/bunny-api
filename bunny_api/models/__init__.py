@@ -1,4 +1,4 @@
-from .base import BaseModel, BaseModelWithoutTimestamp
+from .base import BaseModel
 from .bunny import (
     BunnyConfig,
     BunnyConfigGroup,
@@ -13,7 +13,6 @@ from .bunny import (
 
 __all__ = [
     'BaseModel',
-    'BaseModelWithoutTimestamp',
     'BunnyConfig',
     'BunnyConfigGroup',
     'BunnyConfigType',
