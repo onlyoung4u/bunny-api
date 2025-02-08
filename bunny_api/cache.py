@@ -31,12 +31,12 @@ class Cache(ABC):
 class MemoryCache(Cache):
     """内存缓存"""
 
-    def __init__(self, maxsize: int = 128):
+    def __init__(self, maxsize: int = 1024):
         """
         初始化内存缓存
 
         Args:
-            maxsize: 最大缓存条目数，默认为 128
+            maxsize: 最大缓存条目数，默认为 1024
         """
         self.permanent_cache = {}  # 永久缓存
         self.ttl_cache = TTLCache(maxsize=maxsize, ttl=float('inf'))  # 临时缓存
@@ -114,13 +114,13 @@ class RedisCache(Cache):
 
 
 class BunnyCache:
-    def __init__(self, redis_client: Redis, maxsize: int = 128):
+    def __init__(self, redis_client: Redis, maxsize: int = 1024):
         """
         使用内存和 Redis 实现多级缓存
 
         Args:
             redis_client: Redis 客户端实例
-            maxsize: 最大内存缓存条目数，默认为 128
+            maxsize: 最大内存缓存条目数，默认为 1024
         """
         self.memory_cache = MemoryCache(maxsize=maxsize)
         self.redis_cache = RedisCache(redis_client)

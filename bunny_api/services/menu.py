@@ -139,7 +139,7 @@ class MenuService:
     async def get_user_menu(user_id: int, handle: bool = True) -> List[dict]:
         menus: List[BunnyMenu] = []
 
-        filters = {} if handle else {'hidden': False}
+        filters = {'hidden': False} if handle else {}
 
         if user_id == 1:
             menus = await BunnyMenu.filter(**filters).order_by('sort', 'id')
@@ -153,4 +153,26 @@ class MenuService:
                     .order_by('sort', 'id')
                 )
 
-        return MenuService.handle_menu_tree(menus, handle)
+        menus = MenuService.handle_menu_tree(menus, handle)
+
+        if handle:
+            menus.insert(
+                0,
+                {
+                    'component': 'BasicLayout',
+                    'meta': {'order': -1, 'title': '首页', 'icon': 'lucide:layout-dashboard'},
+                    'name': 'index',
+                    'path': '/index',
+                    'redirect': '/dashboard',
+                    'children': [
+                        {
+                            'component': '/dashboard/workspace/index',
+                            'meta': {'title': '首页', 'hideInMenu': True, 'activePath': '/index'},
+                            'name': 'dashboard',
+                            'path': '/dashboard',
+                        },
+                    ],
+                },
+            )
+
+        return menus

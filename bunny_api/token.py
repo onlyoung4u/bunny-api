@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+import time
+from datetime import datetime, timedelta, timezone
 from hashlib import md5
 from uuid import uuid4
 
@@ -51,12 +52,11 @@ class BunnyToken:
         Returns:
             token
         """
-
-        to_encode = {'user_id': user_id, 'exp': datetime.now() + self.expires_delta}
+        to_encode = {'user_id': user_id, 'exp': datetime.now(timezone.utc) + self.expires_delta}
 
         if self.sso:
             uuid = str(uuid4())
-            to_encode.update({'key': uuid})
+            to_encode.update({'sso': uuid})
             cache_key = self.get_cache_key(user_id)
             bunny_cache.set_redis(cache_key, uuid, self.expires_delta.total_seconds())
 
@@ -88,12 +88,12 @@ class BunnyToken:
         user_id: int = payload['user_id']
 
         if self.sso:
-            if 'key' not in payload:
+            if 'sso' not in payload:
                 raise AuthenticationError()
 
             cache_value = bunny_cache.get_redis(self.get_cache_key(user_id))
 
-            if not cache_value or cache_value != payload['key']:
+            if not cache_value or cache_value != payload['sso']:
                 raise AuthenticationError()
 
         return user_id
@@ -112,9 +112,9 @@ class BunnyToken:
         try:
             payload = decode(token, self.secret_key, algorithms=[self.algorithm])
             user_id: int = payload['user_id']
-            expires_delta: timedelta = payload['exp'] - datetime.now()
+            ttl: int = payload['exp'] - int(time.time())
             cache_key = self.get_cache_key(token, 'token:blacklist')
-            bunny_cache.set_redis(cache_key, user_id, expires_delta.total_seconds())
+            bunny_cache.set_redis(cache_key, user_id, ttl)
             return True
         except Exception:
             return False

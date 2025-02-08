@@ -5,9 +5,17 @@ from fastapi import APIRouter, Depends, Query, Request
 from ..middlewares import permission_check, set_log_body, verify_token
 from ..permission import Permission
 from ..response import success
-from ..schemas import MenuParams, PaginationParams, ResponseSchema, RoleParams, UserLogin
+from ..schemas import (
+    MenuParams,
+    PaginationParams,
+    ResetPassword,
+    ResponseSchema,
+    RoleParams,
+    UserLogin,
+)
 from ..services import AuthService, MenuService
 from ..services.role import RoleService
+from ..utils import get_real_ip
 
 adminRouter = APIRouter(prefix='/admin', dependencies=[Depends(set_log_body)])
 adminRouterWithAuth = APIRouter(
@@ -17,9 +25,29 @@ adminRouterWithAuth = APIRouter(
 
 
 @adminRouter.post('/login', name='login')
-async def login(user_login: UserLogin) -> ResponseSchema:
-    token = await AuthService.login(user_login)
+async def login(request: Request, user_login: UserLogin) -> ResponseSchema:
+    token = await AuthService.login(user_login, get_real_ip(request))
     return success(token)
+
+
+@adminRouterWithAuth.post('/logout', name='logout')
+async def logout(request: Request) -> ResponseSchema:
+    token = request.headers.get('Authorization')
+    token = token.replace('Bearer', '').strip()
+    await AuthService.logout(token)
+    return success()
+
+
+@adminRouterWithAuth.post('/reset-password')
+async def reset_password(request: Request, reset_password: ResetPassword) -> ResponseSchema:
+    await AuthService.reset_password(request.state.user_id, reset_password)
+    return success()
+
+
+@adminRouterWithAuth.get('/user/info')
+async def user_info(request: Request) -> ResponseSchema:
+    user = await AuthService.get_user_info(request.state.user_id)
+    return success(user)
 
 
 @adminRouterWithAuth.get('/permissions')
