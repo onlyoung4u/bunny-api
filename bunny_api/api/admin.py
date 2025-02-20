@@ -13,8 +13,7 @@ from ..schemas import (
     RoleParams,
     UserLogin,
 )
-from ..services import AuthService, MenuService
-from ..services.role import RoleService
+from ..services import AuthService, LogsService, MenuService, RoleService
 from ..utils import get_real_ip
 
 adminRouter = APIRouter(prefix='/admin', dependencies=[Depends(set_log_body)])
@@ -116,3 +115,9 @@ async def role_update(request: Request, id: int, role: RoleParams) -> ResponseSc
 async def role_delete(request: Request, id: int) -> ResponseSchema:
     await RoleService.delete(id, request.state.user_id)
     return success()
+
+
+@adminRouterWithAuth.get('/logs', name='logs')
+async def logs_list(params: Annotated[PaginationParams, Query()]) -> ResponseSchema:
+    logs = await LogsService.list(params)
+    return success(logs)
